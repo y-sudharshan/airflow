@@ -857,6 +857,85 @@ class TestGetGridDataEndpoint:
         assert "is_mapped" not in t4
         assert "children" not in t4
 
+    def test_task_converted_to_taskgroup_doesnt_crash(self, session, test_client):
+        """Test that converting a task to TaskGroup with same name doesn't crash grid view.
+
+        Regression test for https://github.com/apache/airflow/issues/61208
+        When a task is converted to a TaskGroup between DAG versions, old runs have
+        children=None while new runs have children=[...]. The merge should handle this.
+        """
+        from airflow.models import DagRun
+        from airflow.providers.standard.operators.python import PythonOperator
+        from airflow.sdk import DAG
+
+        dag_id = "test_task_to_group_conversion"
+
+        # Version 1: task_a is a simple task
+        with DAG(
+            dag_id=dag_id,
+            start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
+            schedule=None,
+        ) as dag_v1:
+            task_a = PythonOperator(task_id="task_a", python_callable=lambda: True)  # noqa: F841
+            task_b = PythonOperator(task_id="task_b", python_callable=lambda: True)
+
+        # Create a DagRun with the old version
+        dag_bag = DBDagBag()
+        dag_bag.bag_dag(dag_v1, root_dag=dag_v1)
+        session.commit()
+
+        dr1 = DagRun(
+            dag_id=dag_id,
+            run_id="test_run_1",
+            run_type=DagRunType.MANUAL,
+            run_after=pendulum.datetime(2024, 1, 1, tz="UTC"),
+        )
+        session.add(dr1)
+        session.commit()
+
+        # Version 2: task_a becomes a TaskGroup with subtasks
+        with DAG(
+            dag_id=dag_id,
+            start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
+            schedule=None,
+        ) as dag_v2:
+            with TaskGroup(group_id="task_a") as task_a_group:  # noqa: F841
+                task_a1 = PythonOperator(task_id="task_a1", python_callable=lambda: True)  # noqa: F841
+                task_a2 = PythonOperator(task_id="task_a2", python_callable=lambda: True)  # noqa: F841
+            task_b = PythonOperator(task_id="task_b", python_callable=lambda: True)  # noqa: F841
+
+        # Update the DAG with the new version
+        dag_bag.bag_dag(dag_v2, root_dag=dag_v2)
+        session.commit()
+
+        # Create another DagRun with the new version
+        dr2 = DagRun(
+            dag_id=dag_id,
+            run_id="test_run_2",
+            run_type=DagRunType.MANUAL,
+            run_after=pendulum.datetime(2024, 1, 2, tz="UTC"),
+        )
+        session.add(dr2)
+        session.commit()
+
+        # This should not crash with TypeError: 'NoneType' object is not iterable
+        response = test_client.get(f"/grid/structure/{dag_id}")
+        assert response.status_code == 200
+
+        # Verify the structure includes both versions merged correctly
+        nodes = response.json()
+        assert len(nodes) == 2  # task_a (group) and task_b
+
+        # Find task_a - it should be a group now
+        task_a_node = next((n for n in nodes if n["id"] == "task_a"), None)
+        assert task_a_node is not None
+        assert task_a_node["children"] is not None
+        assert len(task_a_node["children"]) == 2
+
+        # Verify subtasks exist
+        subtask_ids = {child["id"] for child in task_a_node["children"]}
+        assert subtask_ids == {"task_a.task_a1", "task_a.task_a2"}
+
     # Tests for root, include_upstream, and include_downstream parameters
     @pytest.mark.parametrize(
         ("params", "expected_task_ids", "description"),
