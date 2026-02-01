@@ -559,3 +559,25 @@ class TestKeycloakAuthManager:
             client_secret_key="client_secret",
         )
         assert client == mock_keycloak_openid.return_value
+
+    def test_get_token_url_without_trailing_slash(self, auth_manager):
+        """Test that _get_token_url constructs correct URL when server_url has no trailing slash."""
+        token_url = auth_manager._get_token_url("https://keycloak.example.com/auth", "myrealm")
+        assert token_url == "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token"
+
+    def test_get_token_url_with_trailing_slash(self, auth_manager):
+        """Test that _get_token_url constructs correct URL when server_url has trailing slash."""
+        token_url = auth_manager._get_token_url("https://keycloak.example.com/auth/", "myrealm")
+        # Should produce the same URL as without trailing slash (no double-slash)
+        assert token_url == "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token"
+
+    def test_get_token_url_with_multiple_trailing_slashes(self, auth_manager):
+        """Test that _get_token_url handles multiple trailing slashes correctly."""
+        token_url = auth_manager._get_token_url("https://keycloak.example.com/auth///", "myrealm")
+        # Should strip all trailing slashes
+        assert token_url == "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token"
+
+    def test_get_token_url_with_root_path(self, auth_manager):
+        """Test that _get_token_url works correctly when server_url is at root."""
+        token_url = auth_manager._get_token_url("https://keycloak.example.com/", "myrealm")
+        assert token_url == "https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token"
