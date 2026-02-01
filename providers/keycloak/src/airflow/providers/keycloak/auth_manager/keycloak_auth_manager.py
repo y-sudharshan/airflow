@@ -427,7 +427,7 @@ class KeycloakAuthManager(BaseAuthManager[KeycloakAuthManagerUser]):
             # Values must be arrays of strings per Keycloak documentation
             # See: https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_authorization_pushing_claims
             claims = {key: [value] for key, value in attributes.items()}
-            claim_json = json.dumps(claims)
+            claim_json = json.dumps(claims, sort_keys=True)
             claim_token = base64.b64encode(claim_json.encode()).decode()
             payload["claim_token"] = claim_token
             payload["claim_token_format"] = "urn:ietf:params:oauth:token-type:jwt"
