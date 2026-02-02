@@ -25,14 +25,6 @@
 Changelog
 ---------
 
-0.5.2
-.....
-
-Bug Fixes
-~~~~~~~~~
-
-- Fix DAG-level RBAC by using ``claim_token`` parameter per UMA specification for context attributes (#61137)
-
 0.5.1
 .....
 
