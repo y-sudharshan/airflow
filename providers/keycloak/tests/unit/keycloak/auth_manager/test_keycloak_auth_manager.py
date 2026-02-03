@@ -608,3 +608,29 @@ class TestKeycloakAuthManager:
             decoded_claim = base64.b64decode(payload["claim_token"]).decode()
             claims = json.loads(decoded_claim)
             assert claims == expected_claims
+
+    @pytest.mark.parametrize(
+        ("server_url", "expected_url"),
+        [
+            (
+                "https://keycloak.example.com/auth",
+                "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token",
+            ),
+            (
+                "https://keycloak.example.com/auth/",
+                "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token",
+            ),
+            (
+                "https://keycloak.example.com/auth///",
+                "https://keycloak.example.com/auth/realms/myrealm/protocol/openid-connect/token",
+            ),
+            (
+                "https://keycloak.example.com/",
+                "https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token",
+            ),
+        ],
+    )
+    def test_get_token_url_normalization(self, auth_manager, server_url, expected_url):
+        """Test that _get_token_url normalizes server_url by stripping trailing slashes."""
+        token_url = auth_manager._get_token_url(server_url, "myrealm")
+        assert token_url == expected_url
