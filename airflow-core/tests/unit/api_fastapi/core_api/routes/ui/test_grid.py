@@ -882,10 +882,10 @@ class TestGetGridDataEndpoint:
         children=None while new runs have children=[...]. The merge should handle this.
         """
         from airflow.models import DagRun
-        from airflow.models.serialized_dag import SerializedDagModel
         from airflow.providers.standard.operators.python import PythonOperator
         from airflow.sdk import DAG
-        from airflow.serialization.serialized_objects import LazyDeserializedDAG
+
+        from tests_common.test_utils.dag import sync_dag_to_db
 
         dag_id = "test_task_to_group_conversion"
 
@@ -898,8 +898,8 @@ class TestGetGridDataEndpoint:
             PythonOperator(task_id="task_a", python_callable=lambda: True)
             PythonOperator(task_id="task_b", python_callable=lambda: True)
 
-        # Serialize and save the old version
-        SerializedDagModel.write_dag(LazyDeserializedDAG.from_dag(dag_v1), bundle_name="test")
+        # Create DagModel and serialize old version
+        sync_dag_to_db(dag_v1, bundle_name="test", session=session)
         session.commit()
 
         dr1 = DagRun(
@@ -922,8 +922,8 @@ class TestGetGridDataEndpoint:
                 PythonOperator(task_id="task_a2", python_callable=lambda: True)
             PythonOperator(task_id="task_b", python_callable=lambda: True)
 
-        # Serialize and save the new version
-        SerializedDagModel.write_dag(LazyDeserializedDAG.from_dag(dag_v2), bundle_name="test")
+        # Update DagModel and serialize new version
+        sync_dag_to_db(dag_v2, bundle_name="test", session=session)
         session.commit()
 
         # Create another DagRun with the new version
