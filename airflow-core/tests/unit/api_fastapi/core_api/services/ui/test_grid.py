@@ -35,27 +35,18 @@ class TestMergeNodeDicts:
         assert current[1]["id"] == "task2"
 
     def test_merge_with_none_new_list(self):
-        """Test that merging with None doesn't crash (regression test for issue #61208)."""
+        """Test merging with None new list doesn't crash."""
         current = [{"id": "task1", "label": "Task 1", "children": None}]
         new = None
 
-        # Should not raise TypeError
         _merge_node_dicts(current, new)
 
-        # Current should remain unchanged
         assert len(current) == 1
         assert current[0]["id"] == "task1"
 
     def test_merge_task_to_taskgroup_conversion(self):
-        """Test merging when a task is converted to a TaskGroup.
-
-        This is the main regression test for issue #61208.
-        Old version has task with children=None, new version has TaskGroup with children=[...].
-        """
-        # Old version: task_a is a simple task
+        """Test task (children=None) converted to TaskGroup (children=[...])."""
         current = [{"id": "task_a", "label": "Task A", "children": None}]
-
-        # New version: task_a is now a TaskGroup with children
         new = [
             {
                 "id": "task_a",
@@ -67,17 +58,17 @@ class TestMergeNodeDicts:
             }
         ]
 
-        # Should not raise TypeError: 'NoneType' object is not iterable
         _merge_node_dicts(current, new)
 
-        # Current should now have the new structure (TaskGroup)
         assert len(current) == 1
         assert current[0]["id"] == "task_a"
-        # The old node with children=None is kept (not merged into children)
+        assert current[0]["children"] is not None
+        assert len(current[0]["children"]) == 2
+        assert current[0]["children"][0]["id"] == "task_a.subtask1"
+        assert current[0]["children"][1]["id"] == "task_a.subtask2"
 
     def test_merge_taskgroup_to_task_conversion(self):
-        """Test merging when a TaskGroup is converted to a simple task."""
-        # Old version: task_a is a TaskGroup
+        """Test TaskGroup (children=[...]) converted to task (children=None)."""
         current = [
             {
                 "id": "task_a",
@@ -87,15 +78,34 @@ class TestMergeNodeDicts:
                 ],
             }
         ]
-
-        # New version: task_a is now a simple task
         new = [{"id": "task_a", "label": "Task A", "children": None}]
 
-        # Should not crash
         _merge_node_dicts(current, new)
 
         assert len(current) == 1
         assert current[0]["id"] == "task_a"
+        assert current[0]["children"] is not None
+        assert len(current[0]["children"]) == 1
+
+    def test_merge_current_none_new_has_children(self):
+        """Test array creation when current=None and new has children."""
+        current = [{"id": "task_x", "label": "Task X", "children": None}]
+        new = [
+            {
+                "id": "task_x",
+                "label": "Task X",
+                "children": [
+                    {"id": "task_x.child1", "label": "Child 1", "children": None},
+                ],
+            }
+        ]
+
+        _merge_node_dicts(current, new)
+
+        assert current[0]["children"] is not None
+        assert isinstance(current[0]["children"], list)
+        assert len(current[0]["children"]) == 1
+        assert current[0]["children"][0]["id"] == "task_x.child1"
 
     def test_merge_nested_children(self):
         """Test merging nodes with nested children."""
@@ -124,7 +134,6 @@ class TestMergeNodeDicts:
 
         assert len(current) == 1
         assert current[0]["id"] == "group1"
-        # Children should be merged
         assert len(current[0]["children"]) == 2
 
     def test_merge_empty_children_list(self):
@@ -154,3 +163,71 @@ class TestMergeNodeDicts:
         assert len(current) == 4
         ids = {node["id"] for node in current}
         assert ids == {"task1", "task2", "task3", "task4"}
+
+    def test_merge_both_none_children(self):
+        """Test merge skipped when both children are None."""
+        current = [{"id": "task1", "label": "Task 1", "children": None}]
+        new = [{"id": "task1", "label": "Task 1", "children": None}]
+
+        _merge_node_dicts(current, new)
+
+        assert len(current) == 1
+        assert current[0]["children"] is None
+
+    def test_merge_current_none_new_empty_list(self):
+        """Test current=None merges with new=[]."""
+        current = [{"id": "task1", "label": "Task 1", "children": None}]
+        new = [{"id": "task1", "label": "Task 1", "children": []}]
+
+        _merge_node_dicts(current, new)
+
+        assert len(current) == 1
+        assert current[0]["children"] == []
+
+    def test_merge_current_empty_list_new_none(self):
+        """Test current=[] merges with new=None."""
+        current = [{"id": "task1", "label": "Task 1", "children": []}]
+        new = [{"id": "task1", "label": "Task 1", "children": None}]
+
+        _merge_node_dicts(current, new)
+
+        assert len(current) == 1
+        assert current[0]["children"] == []
+
+    def test_merge_current_empty_new_has_children(self):
+        """Test current=[] merges with new=[children]."""
+        current = [{"id": "task1", "label": "Task 1", "children": []}]
+        new = [
+            {
+                "id": "task1",
+                "label": "Task 1",
+                "children": [
+                    {"id": "task1.child1", "label": "Child 1", "children": None},
+                ],
+            }
+        ]
+
+        _merge_node_dicts(current, new)
+
+        assert len(current) == 1
+        assert len(current[0]["children"]) == 1
+        assert current[0]["children"][0]["id"] == "task1.child1"
+
+    def test_merge_current_has_children_new_empty(self):
+        """Test current=[children] merges with new=[]."""
+        current = [
+            {
+                "id": "task1",
+                "label": "Task 1",
+                "children": [
+                    {"id": "task1.child1", "label": "Child 1", "children": None},
+                ],
+            }
+        ]
+        new = [{"id": "task1", "label": "Task 1", "children": []}]
+
+        _merge_node_dicts(current, new)
+
+        assert len(current) == 1
+        assert len(current[0]["children"]) == 1
+        assert current[0]["children"][0]["id"] == "task1.child1"

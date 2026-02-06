@@ -876,8 +876,8 @@ class TestGetGridDataEndpoint:
             start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
             schedule=None,
         ) as dag_v1:
-            task_a = PythonOperator(task_id="task_a", python_callable=lambda: True)  # noqa: F841
-            task_b = PythonOperator(task_id="task_b", python_callable=lambda: True)
+            PythonOperator(task_id="task_a", python_callable=lambda: True)
+            PythonOperator(task_id="task_b", python_callable=lambda: True)
 
         # Create a DagRun with the old version
         dag_bag = DBDagBag()
@@ -899,10 +899,10 @@ class TestGetGridDataEndpoint:
             start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
             schedule=None,
         ) as dag_v2:
-            with TaskGroup(group_id="task_a") as task_a_group:  # noqa: F841
-                task_a1 = PythonOperator(task_id="task_a1", python_callable=lambda: True)  # noqa: F841
-                task_a2 = PythonOperator(task_id="task_a2", python_callable=lambda: True)  # noqa: F841
-            task_b = PythonOperator(task_id="task_b", python_callable=lambda: True)  # noqa: F841
+            with TaskGroup(group_id="task_a"):
+                PythonOperator(task_id="task_a1", python_callable=lambda: True)
+                PythonOperator(task_id="task_a2", python_callable=lambda: True)
+            PythonOperator(task_id="task_b", python_callable=lambda: True)
 
         # Update the DAG with the new version
         dag_bag.bag_dag(dag_v2, root_dag=dag_v2)
