@@ -885,7 +885,7 @@ class TestGetGridDataEndpoint:
         from airflow.models.serialized_dag import SerializedDagModel
         from airflow.providers.standard.operators.python import PythonOperator
         from airflow.sdk import DAG
-        from airflow.serialization.definitions.dag import LazyDeserializedDAG
+        from airflow.serialization.serialized_objects import LazyDeserializedDAG
 
         dag_id = "test_task_to_group_conversion"
 
