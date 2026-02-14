@@ -913,6 +913,22 @@ class TestGetGridDataEndpoint:
         session.add(dr1)
         session.commit()
 
+        # Verify v1 structure shows TaskGroup with children
+        response_v1 = test_client.get(f"/grid/structure/{dag_id}")
+        assert response_v1.status_code == 200
+        nodes_v1 = response_v1.json()
+        assert nodes_v1 == [
+            {
+                "id": "task_a",
+                "label": "task_a",
+                "children": [
+                    {"id": "task_a.task_a1", "label": "task_a1"},
+                    {"id": "task_a.task_a2", "label": "task_a2"},
+                ],
+            },
+            {"id": "task_b", "label": "task_b"},
+        ]
+
         # Version 2: task_a becomes a simple task
         with DAG(
             dag_id=dag_id,
@@ -936,19 +952,14 @@ class TestGetGridDataEndpoint:
         session.add(dr2)
         session.commit()
 
-        # This should not crash with TypeError: 'NoneType' object is not iterable
-        response = test_client.get(f"/grid/structure/{dag_id}")
-        assert response.status_code == 200
-
-        # Verify the structure includes both versions merged correctly
-        nodes = response.json()
-        assert len(nodes) == 2  # task_a (now a simple task) and task_b
-
-        # Find task_a - it should be a simple task now (no children)
-        task_a_node = next((n for n in nodes if n["id"] == "task_a"), None)
-        assert task_a_node is not None
-        # After conversion from TaskGroup to task, children should be None or not present
-        assert task_a_node.get("children") is None or "children" not in task_a_node
+        # Verify merged structure preserves v2 (latest) where task_a is a simple task
+        response_v2 = test_client.get(f"/grid/structure/{dag_id}")
+        assert response_v2.status_code == 200
+        nodes_v2 = response_v2.json()
+        assert nodes_v2 == [
+            {"id": "task_a", "label": "task_a"},
+            {"id": "task_b", "label": "task_b"},
+        ]
 
     # Tests for root, include_upstream, and include_downstream parameters
     @pytest.mark.parametrize(
