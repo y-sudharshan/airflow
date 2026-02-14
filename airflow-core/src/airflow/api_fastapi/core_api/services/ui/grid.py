@@ -36,33 +36,22 @@ log = structlog.get_logger(logger_name=__name__)
 def _merge_node_dicts(current: list[dict[str, Any]], new: list[dict[str, Any]] | None) -> None:
     """Merge node dictionaries from different DAG versions, handling structure changes."""
     # Handle None case - can occur when merging old DAG versions
-    # where a task was converted to a TaskGroup or vice versa
+    # where a TaskGroup was converted to a task or vice versa
     if new is None:
         return
 
-    current_ids = {node["id"] for node in current}
+    current_nodes_by_id = {node["id"]: node for node in current}
     for node in new:
-        if node["id"] in current_ids:
-            current_node = _get_node_by_id(current, node["id"])
-            current_children = current_node.get("children")
-            node_children = node.get("children")
-            # Skip only if both are None, otherwise merge children
-            if current_children is not None or node_children is not None:
-                # Ensure current_node has a children list if it doesn't already
-                if current_children is None:
-                    current_node["children"] = []
-                # Merge with empty list if node_children is None
-                _merge_node_dicts(current_node["children"], node_children or [])
+        node_id = node["id"]
+        current_node = current_nodes_by_id.get(node_id)
+        if current_node is not None:
+            # Only merge children if current node already has children
+            # This preserves the structure of the latest DAG version
+            if current_node.get("children") is not None:
+                _merge_node_dicts(current_node["children"], node.get("children"))
         else:
             current.append(node)
-
-
-def _get_node_by_id(nodes: list[dict[str, Any]], node_id: str) -> dict[str, Any]:
-    """Find a node by its ID in a list of nodes."""
-    for node in nodes:
-        if node["id"] == node_id:
-            return node
-    return {}
+            current_nodes_by_id[node_id] = node
 
 
 def agg_state(states):
