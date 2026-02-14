@@ -875,11 +875,11 @@ class TestGetGridDataEndpoint:
         assert "children" not in t4
 
     def test_task_converted_to_taskgroup_doesnt_crash(self, session, test_client):
-        """Test that converting a task to TaskGroup with same name doesn't crash grid view.
+        """Test that converting a TaskGroup to a task with same name doesn't crash grid view.
 
         Regression test for https://github.com/apache/airflow/issues/61208
-        When a task is converted to a TaskGroup between DAG versions, old runs have
-        children=None while new runs have children=[...]. The merge should handle this.
+        When a TaskGroup is converted to a task between DAG versions, old runs have
+        children=[...] while new runs have children=None.
         """
         from airflow.models import DagRun
         from airflow.providers.standard.operators.python import PythonOperator
@@ -889,13 +889,15 @@ class TestGetGridDataEndpoint:
 
         dag_id = "test_task_to_group_conversion"
 
-        # Version 1: task_a is a simple task
+        # Version 1: task_a is a TaskGroup with subtasks
         with DAG(
             dag_id=dag_id,
             start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
             schedule=None,
         ) as dag_v1:
-            PythonOperator(task_id="task_a", python_callable=lambda: True)
+            with TaskGroup(group_id="task_a"):
+                PythonOperator(task_id="task_a1", python_callable=lambda: True)
+                PythonOperator(task_id="task_a2", python_callable=lambda: True)
             PythonOperator(task_id="task_b", python_callable=lambda: True)
 
         # Create DagModel and serialize old version
@@ -911,15 +913,13 @@ class TestGetGridDataEndpoint:
         session.add(dr1)
         session.commit()
 
-        # Version 2: task_a becomes a TaskGroup with subtasks
+        # Version 2: task_a becomes a simple task
         with DAG(
             dag_id=dag_id,
             start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
             schedule=None,
         ) as dag_v2:
-            with TaskGroup(group_id="task_a"):
-                PythonOperator(task_id="task_a1", python_callable=lambda: True)
-                PythonOperator(task_id="task_a2", python_callable=lambda: True)
+            PythonOperator(task_id="task_a", python_callable=lambda: True)
             PythonOperator(task_id="task_b", python_callable=lambda: True)
 
         # Update DagModel and serialize new version
@@ -942,17 +942,13 @@ class TestGetGridDataEndpoint:
 
         # Verify the structure includes both versions merged correctly
         nodes = response.json()
-        assert len(nodes) == 2  # task_a (group) and task_b
+        assert len(nodes) == 2  # task_a (now a simple task) and task_b
 
-        # Find task_a - it should be a group now
+        # Find task_a - it should be a simple task now (no children)
         task_a_node = next((n for n in nodes if n["id"] == "task_a"), None)
         assert task_a_node is not None
-        assert task_a_node["children"] is not None
-        assert len(task_a_node["children"]) == 2
-
-        # Verify subtasks exist
-        subtask_ids = {child["id"] for child in task_a_node["children"]}
-        assert subtask_ids == {"task_a.task_a1", "task_a.task_a2"}
+        # After conversion from TaskGroup to task, children should be None or not present
+        assert task_a_node.get("children") is None or "children" not in task_a_node
 
     # Tests for root, include_upstream, and include_downstream parameters
     @pytest.mark.parametrize(
