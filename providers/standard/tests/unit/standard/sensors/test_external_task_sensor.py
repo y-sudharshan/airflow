@@ -1074,8 +1074,8 @@ exit 0
         assert exc.value.timeout == timedelta(seconds=60)
 
     @pytest.mark.execution_timeout(10)
-    def test_external_task_sensor_deferrable_fallback_to_execution_timeout(self, dag_maker):
-        """Test that deferrable mode falls back to execution_timeout when timeout is not set."""
+    def test_external_task_sensor_deferrable_with_execution_timeout(self, dag_maker):
+        """Test that deferrable mode uses timeout parameter even when execution_timeout is also set."""
         context = {"execution_date": DEFAULT_DATE}
         with dag_maker() as dag:
             op = ExternalTaskSensor(
@@ -1083,6 +1083,7 @@ exit 0
                 external_dag_id="test_dag_parent",
                 external_task_id="test_task",
                 deferrable=True,
+                timeout=90,
                 execution_timeout=timedelta(seconds=120),
             )
             dr = dag.create_dagrun(
@@ -1094,31 +1095,7 @@ exit 0
 
         with pytest.raises(TaskDeferred) as exc:
             op.execute(context=context)
-        assert exc.value.timeout == timedelta(seconds=120)
-
-    @pytest.mark.execution_timeout(10)
-    def test_external_task_sensor_deferrable_timeout_zero_uses_execution_timeout(self, dag_maker):
-        """Test that deferrable mode falls back to execution_timeout when timeout is zero."""
-        context = {"execution_date": DEFAULT_DATE}
-        with dag_maker() as dag:
-            op = ExternalTaskSensor(
-                task_id="test_external_task_sensor_check",
-                external_dag_id="test_dag_parent",
-                external_task_id="test_task",
-                deferrable=True,
-                timeout=0,
-                execution_timeout=timedelta(seconds=120),
-            )
-            dr = dag.create_dagrun(
-                run_id="test_run",
-                run_type=DagRunType.MANUAL,
-                state=None,
-            )
-            context.update(dag_run=dr, logical_date=DEFAULT_DATE)
-
-        with pytest.raises(TaskDeferred) as exc:
-            op.execute(context=context)
-        assert exc.value.timeout == timedelta(seconds=120)
+        assert exc.value.timeout == timedelta(seconds=90)
 
     def test_get_logical_date(self):
         """For AF 2, we check for execution_date in context."""

@@ -435,9 +435,7 @@ class ExternalTaskSensor(BaseSensorOperator):
             dttm_filter = self._get_dttm_filter(context)
             if AIRFLOW_V_3_0_PLUS:
                 self.defer(
-                    timeout=datetime.timedelta(seconds=self.timeout)
-                    if self.timeout
-                    else self.execution_timeout,
+                    timeout=datetime.timedelta(seconds=self.timeout),
                     trigger=WorkflowTrigger(
                         external_dag_id=self.external_dag_id,
                         external_task_group_id=self.external_task_group_id,
@@ -455,9 +453,7 @@ class ExternalTaskSensor(BaseSensorOperator):
                 )
             else:
                 self.defer(
-                    timeout=datetime.timedelta(seconds=self.timeout)
-                    if self.timeout
-                    else self.execution_timeout,
+                    timeout=datetime.timedelta(seconds=self.timeout),
                     trigger=WorkflowTrigger(
                         external_dag_id=self.external_dag_id,
                         external_task_group_id=self.external_task_group_id,
