@@ -1,6 +1,6 @@
 # PoC Demo Execution Report
 
-Generated at: `2026-03-17T09:28:57.869582+00:00`
+Generated at: `2026-03-18T09:14:51.497234+00:00`
 Overall status: `PASS`
 
 ## Step Results
@@ -10,7 +10,7 @@ Overall status: `PASS`
 - Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.1324s`
+- Duration: `0.1037s`
 
 Output:
 ```text
@@ -25,7 +25,7 @@ Written 3 skill(s) to generated\skills.json
 - Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py --check`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.1155s`
+- Duration: `0.11s`
 
 Output:
 ```text
@@ -37,7 +37,7 @@ OK: skills.json is in sync with AGENTS.md
 - Command: `C:\Python313\python.exe scripts/ci/prek/test_agent_skills_poc.py`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.3211s`
+- Duration: `0.2976s`
 
 Output:
 ```text
@@ -64,9 +64,21 @@ test_local_first_contract_rejects_breeze_local (__main__.TestExtraction.test_loc
 test_no_skill_blocks_rejected (__main__.TestExtraction.test_no_skill_blocks_rejected) ... ok
 test_parse_blocks_extracts_three_skills (__main__.TestExtraction.test_parse_blocks_extracts_three_skills) ... ok
 test_render_is_valid_json (__main__.TestExtraction.test_render_is_valid_json) ... ok
+test_extractor_caches_metadata_from_help (__main__.TestMetadataExtraction.test_extractor_caches_metadata_from_help)
+Verify metadata extraction caches results to avoid repeated CLI calls. ... ok
+test_extractor_handles_missing_breeze_gracefully (__main__.TestMetadataExtraction.test_extractor_handles_missing_breeze_gracefully)
+Verify extractor gracefully handles when breeze CLI is not available. ... ok
+test_extractor_parses_subcommands_from_help (__main__.TestMetadataExtraction.test_extractor_parses_subcommands_from_help)
+Verify extractor parses subcommands from --help output. ... ok
+test_extractor_persists_cache_to_disk (__main__.TestMetadataExtraction.test_extractor_persists_cache_to_disk)
+Verify cache is persisted to disk for reuse across sessions. ... ok
+test_resolve_command_fallback_to_cli (__main__.TestMetadataExtraction.test_resolve_command_fallback_to_cli)
+Verify resilient fallback: uses CLI extraction when manifest doesn't have command. ... ok
+test_resolve_command_prefers_manifest (__main__.TestMetadataExtraction.test_resolve_command_prefers_manifest)
+Verify manifest-first strategy: prefers manifest over CLI extraction. ... ok
 
 ----------------------------------------------------------------------
-Ran 20 tests in 0.026s
+Ran 26 tests in 0.038s
 
 OK
 ```

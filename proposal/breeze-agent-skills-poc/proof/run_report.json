@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-03-17T09:28:57.869582+00:00",
-  "root": "C:\\Users\\user\\Desktop\\apache4\\airflow\\gsoc-proposal\\breeze-agent-skills-poc",
+  "generated_at": "2026-03-18T09:14:51.497234+00:00",
+  "root": "C:\\Users\\user\\Desktop\\apache4\\airflow\\proposal\\breeze-agent-skills-poc",
   "all_ok": true,
   "steps": [
     {
       "name": "Generate skills manifest",
       "command": "C:\\Python313\\python.exe scripts/ci/prek/extract_agent_skills.py",
       "returncode": 0,
-      "duration_seconds": 0.1324,
+      "duration_seconds": 0.1037,
       "stdout": "Written 3 skill(s) to generated\\skills.json\n  - run-static-checks\n  - run-unit-tests\n  - verify-dag\n",
       "stderr": "",
       "ok": true
@@ -16,7 +16,7 @@
       "name": "Check for drift",
       "command": "C:\\Python313\\python.exe scripts/ci/prek/extract_agent_skills.py --check",
       "returncode": 0,
-      "duration_seconds": 0.1155,
+      "duration_seconds": 0.11,
       "stdout": "OK: skills.json is in sync with AGENTS.md\n",
       "stderr": "",
       "ok": true
@@ -25,9 +25,9 @@
       "name": "Run PoC tests",
       "command": "C:\\Python313\\python.exe scripts/ci/prek/test_agent_skills_poc.py",
       "returncode": 0,
-      "duration_seconds": 0.3211,
+      "duration_seconds": 0.2976,
       "stdout": "DRIFT: generated/skills.json is out of sync with AGENTS.md\nOK: skills.json is in sync with AGENTS.md\n",
-      "stderr": "test_ci_mismatch_uses_ci_command (__main__.TestCommandPlanning.test_ci_mismatch_uses_ci_command) ... ok\ntest_container_uses_plain_pytest (__main__.TestCommandPlanning.test_container_uses_plain_pytest) ... ok\ntest_local_first_is_default (__main__.TestCommandPlanning.test_local_first_is_default) ... ok\ntest_missing_deps_falls_back_to_breeze_exec (__main__.TestCommandPlanning.test_missing_deps_falls_back_to_breeze_exec) ... ok\ntest_verify_dag_uses_fallback_when_full_env_needed (__main__.TestCommandPlanning.test_verify_dag_uses_fallback_when_full_env_needed) ... ok\ntest_check_mode_fails_when_output_is_out_of_sync (__main__.TestDriftCheck.test_check_mode_fails_when_output_is_out_of_sync) ... ok\ntest_check_mode_passes_when_output_is_in_sync (__main__.TestDriftCheck.test_check_mode_passes_when_output_is_in_sync) ... ok\ntest_detects_breeze_by_env_var (__main__.TestEnvironmentDetection.test_detects_breeze_by_env_var) ... ok\ntest_detects_breeze_by_path_markers (__main__.TestEnvironmentDetection.test_detects_breeze_by_path_markers) ... ok\ntest_detects_ci_environment (__main__.TestEnvironmentDetection.test_detects_ci_environment) ... ok\ntest_detects_host_by_default (__main__.TestEnvironmentDetection.test_detects_host_by_default) ... ok\ntest_duplicate_skill_id_rejected (__main__.TestExtraction.test_duplicate_skill_id_rejected) ... ok\ntest_empty_prereqs_rejected (__main__.TestExtraction.test_empty_prereqs_rejected) ... ok\ntest_invalid_context_rejected (__main__.TestExtraction.test_invalid_context_rejected) ... ok\ntest_invalid_fallback_condition_rejected (__main__.TestExtraction.test_invalid_fallback_condition_rejected) ... ok\ntest_invalid_kind_rejected (__main__.TestExtraction.test_invalid_kind_rejected) ... ok\ntest_local_first_contract_rejects_breeze_local (__main__.TestExtraction.test_local_first_contract_rejects_breeze_local) ... ok\ntest_no_skill_blocks_rejected (__main__.TestExtraction.test_no_skill_blocks_rejected) ... ok\ntest_parse_blocks_extracts_three_skills (__main__.TestExtraction.test_parse_blocks_extracts_three_skills) ... ok\ntest_render_is_valid_json (__main__.TestExtraction.test_render_is_valid_json) ... ok\n\n----------------------------------------------------------------------\nRan 20 tests in 0.026s\n\nOK\n",
+      "stderr": "test_ci_mismatch_uses_ci_command (__main__.TestCommandPlanning.test_ci_mismatch_uses_ci_command) ... ok\ntest_container_uses_plain_pytest (__main__.TestCommandPlanning.test_container_uses_plain_pytest) ... ok\ntest_local_first_is_default (__main__.TestCommandPlanning.test_local_first_is_default) ... ok\ntest_missing_deps_falls_back_to_breeze_exec (__main__.TestCommandPlanning.test_missing_deps_falls_back_to_breeze_exec) ... ok\ntest_verify_dag_uses_fallback_when_full_env_needed (__main__.TestCommandPlanning.test_verify_dag_uses_fallback_when_full_env_needed) ... ok\ntest_check_mode_fails_when_output_is_out_of_sync (__main__.TestDriftCheck.test_check_mode_fails_when_output_is_out_of_sync) ... ok\ntest_check_mode_passes_when_output_is_in_sync (__main__.TestDriftCheck.test_check_mode_passes_when_output_is_in_sync) ... ok\ntest_detects_breeze_by_env_var (__main__.TestEnvironmentDetection.test_detects_breeze_by_env_var) ... ok\ntest_detects_breeze_by_path_markers (__main__.TestEnvironmentDetection.test_detects_breeze_by_path_markers) ... ok\ntest_detects_ci_environment (__main__.TestEnvironmentDetection.test_detects_ci_environment) ... ok\ntest_detects_host_by_default (__main__.TestEnvironmentDetection.test_detects_host_by_default) ... ok\ntest_duplicate_skill_id_rejected (__main__.TestExtraction.test_duplicate_skill_id_rejected) ... ok\ntest_empty_prereqs_rejected (__main__.TestExtraction.test_empty_prereqs_rejected) ... ok\ntest_invalid_context_rejected (__main__.TestExtraction.test_invalid_context_rejected) ... ok\ntest_invalid_fallback_condition_rejected (__main__.TestExtraction.test_invalid_fallback_condition_rejected) ... ok\ntest_invalid_kind_rejected (__main__.TestExtraction.test_invalid_kind_rejected) ... ok\ntest_local_first_contract_rejects_breeze_local (__main__.TestExtraction.test_local_first_contract_rejects_breeze_local) ... ok\ntest_no_skill_blocks_rejected (__main__.TestExtraction.test_no_skill_blocks_rejected) ... ok\ntest_parse_blocks_extracts_three_skills (__main__.TestExtraction.test_parse_blocks_extracts_three_skills) ... ok\ntest_render_is_valid_json (__main__.TestExtraction.test_render_is_valid_json) ... ok\ntest_extractor_caches_metadata_from_help (__main__.TestMetadataExtraction.test_extractor_caches_metadata_from_help)\nVerify metadata extraction caches results to avoid repeated CLI calls. ... ok\ntest_extractor_handles_missing_breeze_gracefully (__main__.TestMetadataExtraction.test_extractor_handles_missing_breeze_gracefully)\nVerify extractor gracefully handles when breeze CLI is not available. ... ok\ntest_extractor_parses_subcommands_from_help (__main__.TestMetadataExtraction.test_extractor_parses_subcommands_from_help)\nVerify extractor parses subcommands from --help output. ... ok\ntest_extractor_persists_cache_to_disk (__main__.TestMetadataExtraction.test_extractor_persists_cache_to_disk)\nVerify cache is persisted to disk for reuse across sessions. ... ok\ntest_resolve_command_fallback_to_cli (__main__.TestMetadataExtraction.test_resolve_command_fallback_to_cli)\nVerify resilient fallback: uses CLI extraction when manifest doesn't have command. ... ok\ntest_resolve_command_prefers_manifest (__main__.TestMetadataExtraction.test_resolve_command_prefers_manifest)\nVerify manifest-first strategy: prefers manifest over CLI extraction. ... ok\n\n----------------------------------------------------------------------\nRan 26 tests in 0.038s\n\nOK\n",
       "ok": true
     }
   ]

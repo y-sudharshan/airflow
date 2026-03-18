@@ -1,0 +1,12 @@
+{
+  "breeze": {
+    "name": "breeze",
+    "description": "Breeze command 'breeze'",
+    "subcommands": [
+      "build",
+      "exec",
+      "start-airflow"
+    ],
+    "source": "cli"
+  }
+}

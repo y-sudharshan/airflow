@@ -303,6 +303,53 @@ The proposal asks for AI-agent reliability in two core areas: (1) detect whether
 
 ---
 
+## Response to Current Review Comments
+
+This branch is intentionally centered on issue #62500 and is not a translation-only skill proposal.
+
+### 1) "Static AGENTS.md only, not machine-parseable"
+
+- Addressed by `scripts/ci/prek/extract_agent_skills.py`
+- Output: `generated/skills.json`
+- Contract test coverage includes extraction, schema validation, and deterministic rendering.
+
+### 2) "No extraction/tests/context detection/demo"
+
+- Extraction pipeline: `scripts/ci/prek/extract_agent_skills.py`
+- Runtime context API: `scripts/ci/prek/breeze_context_detect.py`
+- Test suite: `scripts/ci/prek/test_agent_skills_poc.py` (20 tests)
+- End-to-end demo: `run_poc_demo.py`
+
+### 3) "Orthogonal to Breeze host/container problem"
+
+- Core behavior is host vs Breeze awareness plus command routing.
+- Directly tested in:
+   - `test_detects_breeze_by_env_var`
+   - `test_detects_breeze_by_path_markers`
+   - `test_local_first_is_default`
+   - `test_missing_deps_falls_back_to_breeze_exec`
+   - `test_ci_mismatch_uses_ci_command`
+   - `test_verify_dag_uses_fallback_when_full_env_needed`
+
+### 4) "No measurable execution proof"
+
+- Machine-readable + human-readable execution proof:
+   - `proof/run_report.json`
+   - `proof/run_report.md`
+- Supporting logs/screenshots:
+   - `proof/host_run.log`
+   - `proof/breeze_context_logic.log`
+   - `proof/screenshots/`
+
+### 5) "No drift verification"
+
+- `--check` mode in extraction script enforces docs/manifest sync.
+- Verified by:
+   - `test_check_mode_fails_when_output_is_out_of_sync`
+   - `test_check_mode_passes_when_output_is_in_sync`
+
+---
+
 ## Design Rationale
 
 ### Why Lightweight Markers?
@@ -341,7 +388,7 @@ The proposal asks for AI-agent reliability in two core areas: (1) detect whether
 
 ✅ **Zero external dependencies** (stdlib regex only)  
 ✅ **Drift detection** (prek hook prevents divergence)  
-✅ **Portable tests** (8 unit tests, mocked environments)  
+✅ **Portable tests** (20 unit tests, mocked environments)  
 ✅ **One-command demo** (full orchestration)  
 ✅ **Real proof** (execution captured to MD + JSON)  
 ✅ **Maintainable** (simple extraction, thin API)  
@@ -397,7 +444,7 @@ python test_agent_skills_poc.py -v
 - ✅ Environment detection
 - ✅ Extraction & drift detection
 - ✅ Three-tier execution model
-- ✅ 8 unit tests
+- ✅ 20 unit tests
 - ✅ Reproducible PoC
 
 **Out of Scope (future):**
