@@ -11,11 +11,11 @@ This folder contains a focused proposal package for Breeze-aware agent skills in
 
 Use the PoC folder as the canonical artifact:
 
-- `agent-skills-proposal/breeze-agent-skills-poc/README.md`
+- `proposal/breeze-agent-skills-poc/README.md`
 
 ## Quick Validation
 
-From `agent-skills-proposal/breeze-agent-skills-poc/`:
+From `proposal/breeze-agent-skills-poc/`:
 
 ```bash
 python run_poc_demo.py
