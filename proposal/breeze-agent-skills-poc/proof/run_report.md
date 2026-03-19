@@ -1,6 +1,6 @@
 # PoC Demo Execution Report
 
-Generated at: `2026-03-18T09:14:51.497234+00:00`
+Generated at: `2026-03-19T09:16:41.147061+00:00`
 Overall status: `PASS`
 
 ## Step Results
@@ -10,7 +10,7 @@ Overall status: `PASS`
 - Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.1037s`
+- Duration: `0.1619s`
 
 Output:
 ```text
@@ -25,7 +25,7 @@ Written 3 skill(s) to generated\skills.json
 - Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py --check`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.11s`
+- Duration: `0.302s`
 
 Output:
 ```text
@@ -37,7 +37,7 @@ OK: skills.json is in sync with AGENTS.md
 - Command: `C:\Python313\python.exe scripts/ci/prek/test_agent_skills_poc.py`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.2976s`
+- Duration: `0.671s`
 
 Output:
 ```text
@@ -78,7 +78,7 @@ test_resolve_command_prefers_manifest (__main__.TestMetadataExtraction.test_reso
 Verify manifest-first strategy: prefers manifest over CLI extraction. ... ok
 
 ----------------------------------------------------------------------
-Ran 26 tests in 0.038s
+Ran 26 tests in 0.203s
 
 OK
 ```
