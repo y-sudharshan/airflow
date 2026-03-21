@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 PROOF_DIR = ROOT / "proof"
+SOURCE_OF_TRUTH = ROOT.parent.parent / "contributing-docs" / "03_contributors_quick_start.rst"
 
 
 def run_step(name: str, command: list[str]) -> dict:
@@ -69,8 +70,14 @@ def write_reports(results: list[dict]) -> None:
 def main() -> int:
     python = sys.executable
     steps = [
-        ("Generate skills manifest", [python, "scripts/ci/prek/extract_agent_skills.py"]),
-        ("Check for drift", [python, "scripts/ci/prek/extract_agent_skills.py", "--check"]),
+        (
+            "Generate skills manifest",
+            [python, "scripts/ci/prek/extract_agent_skills.py", "--source", str(SOURCE_OF_TRUTH)],
+        ),
+        (
+            "Check for drift",
+            [python, "scripts/ci/prek/extract_agent_skills.py", "--check", "--source", str(SOURCE_OF_TRUTH)],
+        ),
         ("Run PoC tests", [python, "scripts/ci/prek/test_agent_skills_poc.py"]),
     ]
 

@@ -7,11 +7,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-AGENTS_FILE = ROOT / "AGENTS.md"
+AIRFLOW_ROOT = ROOT.parents[1]
+AGENTS_FILE = AIRFLOW_ROOT / "contributing-docs" / "03_contributors_quick_start.rst"
 OUTPUT_FILE = ROOT / "generated" / "skills.json"
 
 BLOCK_RE = re.compile(
-    r"<!-- agent-skill:start (?P<id>[a-z0-9\-]+) -->\n(?P<body>.*?)<!-- agent-skill:end (?P=id) -->",
+    r"\s*<!-- agent-skill:start (?P<id>[a-z0-9\-]+) -->\n(?P<body>.*?)\s*<!-- agent-skill:end (?P=id) -->",
     re.DOTALL,
 )
 LINE_RE = re.compile(r"^(?P<key>[a-z_]+):\s*(?P<value>.*)$")
@@ -69,7 +70,7 @@ def parse_blocks(text: str) -> list[dict[str, object]]:
         skills.append(parsed)
 
     if not skills:
-        raise ValueError("No agent-skill blocks found in AGENTS.md")
+        raise ValueError("No agent-skill blocks found in source document")
 
     return skills
 
@@ -81,23 +82,30 @@ def render(skills: list[dict[str, object]]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--source", default=str(AGENTS_FILE))
     args = parser.parse_args()
 
-    text = AGENTS_FILE.read_text(encoding="utf-8")
+    source_file = Path(args.source)
+    if not source_file.exists():
+        print(f"ERROR: source file not found: {source_file}")
+        return 1
+
+    text = source_file.read_text(encoding="utf-8")
     skills = parse_blocks(text)
     rendered = render(skills)
 
     if args.check:
         current = OUTPUT_FILE.read_text(encoding="utf-8") if OUTPUT_FILE.exists() else ""
         if current != rendered:
-            print("DRIFT: generated/skills.json is out of sync with AGENTS.md")
+            print(f"DRIFT: generated/skills.json is out of sync with {source_file}")
             return 1
-        print("OK: skills.json is in sync with AGENTS.md")
+        print(f"OK: skills.json is in sync with {source_file}")
         return 0
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_FILE.write_text(rendered, encoding="utf-8")
     print(f"Written {len(skills)} skill(s) to {OUTPUT_FILE.relative_to(ROOT)}")
+    print(f"Source of truth: {source_file}")
     for skill in skills:
         print(f"  - {skill['id']}")
     return 0

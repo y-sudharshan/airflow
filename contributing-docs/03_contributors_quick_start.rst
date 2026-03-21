@@ -888,3 +888,50 @@ setup local machine for development.
 
 Once you have your environment set up, you can start contributing to Airflow. You can find more
 about ways you can contribute in the `How to contribute <04_how_to_contribute.rst>`_ document.
+
+
+Agent Skill Blocks (PoC)
+########################
+
+The blocks below are intentionally embedded in contributor documentation so the same source can be
+used by both humans and agents.
+
+.. raw:: html
+
+  <!-- agent-skill:start run-static-checks -->
+  id: run-static-checks
+  context: host
+  kind: workflow
+  summary: Run static checks on changed files using prek.
+  local: prek run ruff ruff-format mypy --files {files}
+  fallback:
+  fallback_condition:
+  prereqs: git-add
+  <!-- agent-skill:end run-static-checks -->
+
+.. raw:: html
+
+  <!-- agent-skill:start run-unit-tests -->
+  id: run-unit-tests
+  context: either
+  kind: workflow
+  summary: Run targeted unit tests with a local-first strategy.
+  local: uv run --project {distribution_folder} pytest {test_path} -xvs
+  fallback: breeze exec pytest {test_path} -xvs
+  fallback_condition: missing_system_deps
+  ci: breeze testing tests {test_path} --python {python} --backend {backend}
+  prereqs: detect-environment
+  <!-- agent-skill:end run-unit-tests -->
+
+.. raw:: html
+
+  <!-- agent-skill:start verify-dag -->
+  id: verify-dag
+  context: host
+  kind: workflow
+  summary: Start Airflow and verify DAG behavior as a stretch workflow.
+  local: uv run --project airflow airflow dags test {dag_id} {execution_date}
+  fallback: breeze start-airflow --backend {backend}
+  fallback_condition: needs_full_airflow_env
+  prereqs: detect-environment, run-unit-tests
+  <!-- agent-skill:end verify-dag -->

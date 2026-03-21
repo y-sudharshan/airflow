@@ -4,6 +4,8 @@ import json
 import os
 import tempfile
 import unittest
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -85,7 +87,8 @@ prereqs: git-add
             with mock.patch.object(extract_agent_skills, "AGENTS_FILE", agents_file), mock.patch.object(
                 extract_agent_skills, "OUTPUT_FILE", out_file
             ), mock.patch("sys.argv", ["extract_agent_skills.py", "--check"]):
-                code = extract_agent_skills.main()
+                with redirect_stdout(io.StringIO()):
+                    code = extract_agent_skills.main()
             self.assertEqual(1, code)
 
     def test_check_mode_passes_when_output_is_in_sync(self):
@@ -113,7 +116,8 @@ prereqs: git-add
             with mock.patch.object(extract_agent_skills, "AGENTS_FILE", agents_file), mock.patch.object(
                 extract_agent_skills, "OUTPUT_FILE", out_file
             ), mock.patch("sys.argv", ["extract_agent_skills.py", "--check"]):
-                code = extract_agent_skills.main()
+                with redirect_stdout(io.StringIO()):
+                    code = extract_agent_skills.main()
             self.assertEqual(0, code)
 
 
@@ -275,6 +279,49 @@ class TestMetadataExtraction(unittest.TestCase):
                 self.assertIn("unknown-cmd", result)
                 self.assertIn("other-cmd", result)
                 # Demonstrates resilience: we found commands not in our manifest!
+
+
+class TestEndToEndPipeline(unittest.TestCase):
+    def test_full_pipeline_rst_to_command(self):
+        text = extract_agent_skills.AGENTS_FILE.read_text(encoding="utf-8")
+        skills = extract_agent_skills.parse_blocks(text)
+        payload = json.loads(extract_agent_skills.render(skills))
+        by_id = {skill["id"]: skill for skill in payload["skills"]}
+
+        with mock.patch(
+            "breeze_context_detect.detect_environment",
+            return_value=breeze_context_detect.EnvironmentEvidence(
+                breeze_context_detect.ExecutionEnvironment.HOST,
+                "default",
+            ),
+        ):
+            command = breeze_context_detect.plan_command(
+                by_id["run-unit-tests"],
+                {
+                    "distribution_folder": "airflow-core",
+                    "test_path": "tests/utils/test_helpers.py",
+                    "python": "3.12",
+                    "backend": "postgres",
+                },
+            )
+        self.assertEqual(
+            "uv run --project airflow-core pytest tests/utils/test_helpers.py -xvs",
+            command,
+        )
+
+    def test_check_mode_works_with_rst_source_override(self):
+        with mock.patch(
+            "sys.argv",
+            [
+                "extract_agent_skills.py",
+                "--check",
+                "--source",
+                str(extract_agent_skills.AGENTS_FILE),
+            ],
+        ):
+            with redirect_stdout(io.StringIO()):
+                code = extract_agent_skills.main()
+        self.assertEqual(0, code)
 
 
 if __name__ == "__main__":

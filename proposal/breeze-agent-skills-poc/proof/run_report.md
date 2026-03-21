@@ -1,20 +1,21 @@
 # PoC Demo Execution Report
 
-Generated at: `2026-03-19T09:16:41.147061+00:00`
+Generated at: `2026-03-21T15:08:50.205267+00:00`
 Overall status: `PASS`
 
 ## Step Results
 
 ### Generate skills manifest
 
-- Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py`
+- Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py --source C:\Users\user\Desktop\apache4\airflow\contributing-docs\03_contributors_quick_start.rst`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.1619s`
+- Duration: `0.2927s`
 
 Output:
 ```text
 Written 3 skill(s) to generated\skills.json
+Source of truth: C:\Users\user\Desktop\apache4\airflow\contributing-docs\03_contributors_quick_start.rst
   - run-static-checks
   - run-unit-tests
   - verify-dag
@@ -22,14 +23,14 @@ Written 3 skill(s) to generated\skills.json
 
 ### Check for drift
 
-- Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py --check`
+- Command: `C:\Python313\python.exe scripts/ci/prek/extract_agent_skills.py --check --source C:\Users\user\Desktop\apache4\airflow\contributing-docs\03_contributors_quick_start.rst`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.302s`
+- Duration: `0.1434s`
 
 Output:
 ```text
-OK: skills.json is in sync with AGENTS.md
+OK: skills.json is in sync with C:\Users\user\Desktop\apache4\airflow\contributing-docs\03_contributors_quick_start.rst
 ```
 
 ### Run PoC tests
@@ -37,13 +38,10 @@ OK: skills.json is in sync with AGENTS.md
 - Command: `C:\Python313\python.exe scripts/ci/prek/test_agent_skills_poc.py`
 - Status: `PASS`
 - Exit code: `0`
-- Duration: `0.671s`
+- Duration: `0.8012s`
 
 Output:
 ```text
-DRIFT: generated/skills.json is out of sync with AGENTS.md
-OK: skills.json is in sync with AGENTS.md
-
 test_ci_mismatch_uses_ci_command (__main__.TestCommandPlanning.test_ci_mismatch_uses_ci_command) ... ok
 test_container_uses_plain_pytest (__main__.TestCommandPlanning.test_container_uses_plain_pytest) ... ok
 test_local_first_is_default (__main__.TestCommandPlanning.test_local_first_is_default) ... ok
@@ -51,6 +49,8 @@ test_missing_deps_falls_back_to_breeze_exec (__main__.TestCommandPlanning.test_m
 test_verify_dag_uses_fallback_when_full_env_needed (__main__.TestCommandPlanning.test_verify_dag_uses_fallback_when_full_env_needed) ... ok
 test_check_mode_fails_when_output_is_out_of_sync (__main__.TestDriftCheck.test_check_mode_fails_when_output_is_out_of_sync) ... ok
 test_check_mode_passes_when_output_is_in_sync (__main__.TestDriftCheck.test_check_mode_passes_when_output_is_in_sync) ... ok
+test_check_mode_works_with_rst_source_override (__main__.TestEndToEndPipeline.test_check_mode_works_with_rst_source_override) ... ok
+test_full_pipeline_rst_to_command (__main__.TestEndToEndPipeline.test_full_pipeline_rst_to_command) ... ok
 test_detects_breeze_by_env_var (__main__.TestEnvironmentDetection.test_detects_breeze_by_env_var) ... ok
 test_detects_breeze_by_path_markers (__main__.TestEnvironmentDetection.test_detects_breeze_by_path_markers) ... ok
 test_detects_ci_environment (__main__.TestEnvironmentDetection.test_detects_ci_environment) ... ok
@@ -78,7 +78,7 @@ test_resolve_command_prefers_manifest (__main__.TestMetadataExtraction.test_reso
 Verify manifest-first strategy: prefers manifest over CLI extraction. ... ok
 
 ----------------------------------------------------------------------
-Ran 26 tests in 0.203s
+Ran 28 tests in 0.100s
 
 OK
 ```

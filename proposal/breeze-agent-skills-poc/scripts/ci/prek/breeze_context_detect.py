@@ -174,7 +174,8 @@ def resolve_command_from_metadata(command_name: str, subcommand: str | None = No
         skills_path = Path(__file__).parent.parent.parent.parent / "generated" / "skills.json"
         if skills_path.exists():
             with open(skills_path) as f:
-                skills = json.load(f)
+                payload = json.load(f)
+                skills = payload.get("skills", []) if isinstance(payload, dict) else []
                 for skill in skills:
                     if skill["id"] == command_name:
                         return CommandMetadata(
